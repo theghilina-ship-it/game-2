@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Adu Cepat 2 Pemain: Lomba Tanam Hutan — XII.1</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=Source+Sans+3:wght@400;600;700&display=swap">
+<style>
+:root{
+  --bg:#f3fbe9;
+  --surface:#ffffff;
+  --ink:#17332a;
+  --mute:#4f6a5c;
+  --line:#17332a;
+  --forest:#0f4a37;
+  --leaf:#2fb36b;
+  --sun:#ffc933;
+  --sky:#12a7b0;
+  --coral:#ff6f61;
+  --sh:4px 4px 0 #17332a;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font:400 16px/1.4 "Source Sans 3",system-ui,sans-serif;
+  height:100dvh; display:flex; flex-direction:column; overflow:hidden;
+}
+h1,h2,h3{font-family:"Bricolage Grotesque",system-ui,sans-serif;margin:0}
+.wrap{max-width:600px;width:100%;height:100%;margin:0 auto;display:flex;flex-direction:column;padding:12px;gap:10px}
+.card{
+  background:var(--surface); border:2px solid var(--line);
+  border-radius:22px; padding:18px; box-shadow:var(--sh); text-align:center;
+}
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  background:var(--leaf); color:#fff; border:2px solid var(--line);
+  border-radius:16px; padding:12px 24px; font:700 17px "Bricolage Grotesque",sans-serif;
+  box-shadow:3px 3px 0 var(--line); cursor:pointer; width:100%; margin-top:10px;
+}
+.btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--line)}
+.btn.sun{background:var(--sun);color:#17332a}
+.btn.coral{background:var(--coral);color:#fff}
+
+input[type="text"]{
+  width:100%; padding:10px 14px; border:2px solid var(--line);
+  border-radius:12px; font:600 16px "Source Sans 3",sans-serif;
+  background:var(--bg); color:var(--ink); margin:6px 0 12px; text-align:center;
+}
+
+/* Battle Arena Split Screen */
+.battle-container{
+  flex:1; display:flex; flex-direction:column; gap:8px; height:100%;
+}
+.player-side{
+  flex:1; border:3px solid var(--line); border-radius:20px;
+  padding:12px; display:flex; flex-direction:column; justify-content:space-between;
+  position:relative; overflow:hidden; box-shadow:var(--sh);
+  user-select:none; cursor:pointer; transition:background .08s;
+}
+.player-side.p1{background:linear-gradient(135deg, #e4f9f5 0%, #c1e7df 100%);}
+.player-side.p2{background:linear-gradient(135deg, #fff3d6 0%, #ffe39c 100%);}
+.player-side:active{filter:brightness(0.94)}
+
+.side-header{
+  display:flex; justify-content:space-between; align-items:center;
+  font:700 15px "Bricolage Grotesque",sans-serif; z-index:2;
+}
+.tree-stage{
+  flex:1; display:flex; align-items:center; justify-content:center;
+  position:relative; z-index:2;
+}
+.tree-visual{font-size:52px; transition:transform .1s cubic-bezier(0.175, 0.885, 0.32, 1.275)}
+.tap-effect{
+  position:absolute; font-weight:800; font-size:20px; color:var(--forest);
+  pointer-events:none; animation: floatUp .4s ease-out forwards; z-index:10;
+}
+@keyframes floatUp{
+  0%{transform:translateY(0) scale(0.8); opacity:1}
+  100%{transform:translateY(-35px) scale(1.2); opacity:0}
+}
+.progress-bar-wrap{
+  height:14px; background:rgba(23,51,42,0.15); border:2px solid var(--line);
+  border-radius:9px; overflow:hidden; z-index:2;
+}
+.progress-bar-fill{
+  height:100%; width:0%; background:var(--leaf); transition:width .05s linear;
+}
+.p2-fill{background:var(--coral)!important}
+
+.center-hud{
+  display:flex; justify-content:space-between; align-items:center;
+  background:var(--surface); border:2px solid var(--line); border-radius:14px;
+  padding:6px 14px; font:800 16px "Bricolage Grotesque",sans-serif; box-shadow:2px 2px 0 var(--line);
+}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <!-- LOBBY SCREEN -->
+  <div id="scrLobby" class="card" style="margin:auto">
+    <span style="background:var(--sun);border:2px solid var(--line);padding:2px 10px;border-radius:99px;font:700 12px 'Bricolage Grotesque';display:inline-block;margin-bottom:8px">Mode 2 Pemain ⚔️</span>
+    <h1 style="font-size:28px;color:var(--forest)">Adu Cepat Tanam Hutan!</h1>
+    <p style="color:var(--mute);font-size:15px;margin:6px 0 14px">Dua pengunjung adu cepat mengetuk layarnya masing-masing selama 20 detik untuk menumbuhkan pohon tertinggi!</p>
+    
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;text-align:left">
+      <div>
+        <label for="p1Name" style="font-weight:700;font-size:14px;color:var(--sky)">Pemain 1 (Atas):</label>
+        <input id="p1Name" type="text" maxlength="12" value="Raka">
+      </div>
+      <div>
+        <label for="p2Name" style="font-weight:700;font-size:14px;color:#d9534f">Pemain 2 (Bawah):</label>
+        <input id="p2Name" type="text" maxlength="12" value="Nisa">
+      </div>
+    </div>
+    <button id="startBtn" class="btn">Mulai Duel Sekarang! 🚀</button>
+  </div>
+
+  <!-- BATTLE SCREEN -->
+  <div id="scrBattle" class="battle-container hidden">
+    <!-- Player 1 (Top Side) -->
+    <div class="player-side p1" id="sideP1">
+      <div class="side-header">
+        <span id="labelP1" style="color:var(--sky)">P1: Raka</span>
+        <span id="scoreP1">0 Tap</span>
+      </div>
+      <div class="tree-stage">
+        <div class="tree-visual" id="treeP1">🌱</div>
+      </div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" id="fillP1"></div>
+      </div>
+    </div>
+
+    <!-- Center HUD Timer -->
+    <div class="center-hud">
+      <span style="color:var(--mute);font-size:13px">ADU CEPAT</span>
+      <span id="timerTxt" style="color:var(--coral);font-size:20px">20s</span>
+      <span style="color:var(--mute);font-size:13px">XII.1 SMAN 4</span>
+    </div>
+
+    <!-- Player 2 (Bottom Side) -->
+    <div class="player-side p2" id="sideP2">
+      <div class="side-header">
+        <span id="labelP2" style="color:#c93b32">P2: Nisa</span>
+        <span id="scoreP2">0 Tap</span>
+      </div>
+      <div class="tree-stage">
+        <div class="tree-visual" id="treeP2">🌱</div>
+      </div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill p2-fill" id="fillP2"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULT SCREEN -->
+  <div id="scrResult" class="card hidden" style="margin:auto">
+    <div id="resCrown" style="font-size:52px;margin-bottom:4px">👑</div>
+    <h2 id="resWinner" style="font-size:28px;color:var(--forest)">Pemenang!</h2>
+    <p id="resStats" style="color:var(--mute);margin:8px 0 16px;font-size:16px"></p>
+    <button id="rematchBtn" class="btn sun">Main Lagi / Ganti Pemain 🔄</button>
+  </div>
+</div>
+
+<script>
+let state = {
+  p1Name: "Raka",
+  p2Name: "Nisa",
+  p1Score: 0,
+  p2Score: 0,
+  timeLeft: 20,
+  isPlaying: false,
+  timerInterval: null,
+  targetTaps: 40 // Tap untuk pohon penuh maksimal
+};
+
+const scrLobby = document.getElementById("scrLobby");
+const scrBattle = document.getElementById("scrBattle");
+const scrResult = document.getElementById("scrResult");
+
+document.getElementById("startBtn").addEventListener("click", () => {
+  state.p1Name = document.getElementById("p1Name").value.trim() || "Pemain 1";
+  state.p2Name = document.getElementById("p2Name").value.trim() || "Pemain 2";
+  
+  document.getElementById("labelP1").textContent = "P1: " + state.p1Name;
+  document.getElementById("labelP2").textContent = "P2: " + state.p2Name;
+  
+  state.p1Score = 0;
+  state.p2Score = 0;
+  state.timeLeft = 20;
+  state.isPlaying = true;
+
+  updateUI();
+  scrLobby.classList.add("hidden");
+  scrResult.classList.add("hidden");
+  scrBattle.classList.remove("hidden");
+
+  state.timerInterval = setInterval(() => {
+    state.timeLeft--;
+    document.getElementById("timerTxt").textContent = state.timeLeft + "s";
+    if (state.timeLeft <= 0) {
+      endBattle();
+    }
+  }, 1000);
+});
+
+function handleTap(playerNum, event) {
+  if (!state.isPlaying) return;
+
+  if (playerNum === 1) {
+    state.p1Score++;
+    animateTree(1);
+    showPopup(event, '+1', document.getElementById("sideP1"));
+  } else {
+    state.p2Score++;
+    animateTree(2);
+    showPopup(event, '+1', document.getElementById("sideP2"));
+  }
+  updateUI();
+}
+
+document.getElementById("sideP1").addEventListener("pointerdown", (e) => {
+  handleTap(1, e);
+});
+document.getElementById("sideP2").addEventListener("pointerdown", (e) => {
+  handleTap(2, e);
+});
+
+function animateTree(pNum) {
+  const el = document.getElementById(`treeP${pNum}`);
+  el.style.transform = "scale(1.25)";
+  setTimeout(() => { el.style.transform = "scale(1)"; }, 90);
+}
+
+function showPopup(e, text, parentEl) {
+  const rect = parentEl.getBoundingClientRect();
+  const x = (e.clientX || rect.left + rect.width / 2) - rect.left;
+  const y = (e.clientY || rect.top + rect.height / 2) - rect.top;
+
+  const pop = document.createElement("div");
+  pop.className = "tap-effect";
+  pop.textContent = text;
+  pop.style.left = x + "px";
+  pop.style.top = y + "px";
+  parentEl.appendChild(pop);
+  setTimeout(() => pop.remove(), 400);
+}
+
+function updateUI() {
+  document.getElementById("scoreP1").textContent = state.p1Score + " Tap";
+  document.getElementById("scoreP2").textContent = state.p2Score + " Tap";
+
+  const p1Pct = Math.min(100, (state.p1Score / state.targetTaps) * 100);
+  const p2Pct = Math.min(100, (state.p2Score / state.targetTaps) * 100);
+
+  document.getElementById("fillP1").style.width = p1Pct + "%";
+  document.getElementById("fillP2").style.width = p2Pct + "%";
+
+  // Ubah ikon pohon sesuai progres tap
+  document.getElementById("treeP1").textContent = getTreeIcon(state.p1Score);
+  document.getElementById("treeP2").textContent = getTreeIcon(state.p2Score);
+}
+
+function getTreeIcon(score) {
+  if (score >= 35) return "🌳";
+  if (score >= 22) return "🌲";
+  if (score >= 10) return "🌿";
+  return "🌱";
+}
+
+function endBattle() {
+  state.isPlaying = false;
+  clearInterval(state.timerInterval);
+
+  scrBattle.classList.add("hidden");
+  scrResult.classList.remove("hidden");
+
+  const wName = state.p1Score > state.p2Score ? state.p1Name : (state.p2Score > state.p1Score ? state.p2Name : "SERIBU");
+  
+  if (wName === "SERIBU") {
+    document.getElementById("resCrown").textContent = "🤝";
+    document.getElementById("resWinner").textContent = "Hasil Seri!";
+    document.getElementById("resStats").textContent = `Keduanya sama-sama hebat mengumpulkan ${state.p1Score} tap!`;
+  } else {
+    document.getElementById("resCrown").textContent = "👑🎉";
+    document.getElementById("resWinner").textContent = `${wName} Pemenangnya!`;
+    document.getElementById("resStats").textContent = `${state.p1Name}: ${state.p1Score} tap vs ${state.p2Name}: ${state.p2Score} tap. Pohon berhasil tumbuh lebat!`;
+  }
+}
+
+document.getElementById("rematchBtn").addEventListener("click", () => {
+  scrResult.classList.add("hidden");
+  scrLobby.classList.remove("hidden");
+});
+</script>
+</body>
+</html>
